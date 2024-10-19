@@ -1,0 +1,33 @@
+"0596990513",
+        "0111111111",
+        "0222222222",
+        "0333333333",
+        "0999999999",
+        "0546892433"
+
+driver 0333333333
+
+MQTT_HOST="broker.hivemq.com"
+MQTT_PORT=1883
+MQTT_ENABLE_LOGGING=false
+MQTT_UNIQUE_TOPIC_NAME="sawayer"
+
+// hint text to phone number 
+// instead of arroe back button as word 
+// bin to select my location 
+//
+
+api/driver-register
+1- national_id type string 
+2-national_id_image type file or base64
+3-drive_license_image type file or base64
+4-car_registeration_image type file or base64
+5- there is already a profile image , we just need it to be avaliable in registeration 
+6 - there is already a bank  number , we just need it to be avaliable in registeration 
+
+//
+1- why email is required 
+2- why bank account is required 
+3-req['user_bank_account'] 
+user bank account يجب ان يكون مصفوفة
+//please keep mqt server as it is 
