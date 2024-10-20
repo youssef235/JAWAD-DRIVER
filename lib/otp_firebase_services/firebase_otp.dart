@@ -9,7 +9,7 @@ class PhoneAuthService {
 
     try {
       await _auth.verifyPhoneNumber(
-        phoneNumber: "+20${phoneNumber}",
+        phoneNumber: "+966${phoneNumber}",
         timeout: Duration(seconds: 60),
         verificationCompleted: (PhoneAuthCredential credential) async {
           print('Verification completed automatically');

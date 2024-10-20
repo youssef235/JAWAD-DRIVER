@@ -8,6 +8,7 @@ import '../network/RestApis.dart';
 import '../utils/Constants.dart';
 import '../utils/Extensions/app_common.dart';
 import '../utils/Extensions/custom_button.dart';
+import 'SignUpScreen.dart';
 import 'otp_sucess_screen.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -148,81 +149,80 @@ class _OtpScreenState extends State<OtpScreen> {
                       _isLoading
                           ? Center(
                               child:
-                                  CircularProgressIndicator(), // عرض مؤشر التحميل أثناء التحميل
+                                  CircularProgressIndicator(),
                             )
                           : CustomButton(
-                              onTap: () async {
-                                setState(() {
-                                  _isLoading = true; // عند بدء التحميل
-                                });
+                        onTap: () async {
+                          setState(() {
+                            _isLoading = true; // عند بدء التحميل
+                          });
 
-                                // تحقق من صحة رمز OTP
-                                if (textEditingController.text.isEmpty ||
-                                    textEditingController.text.length < 6) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content:
-                                            Text('يرجى إدخال رمز OTP صحيح')),
-                                  );
-                                  setState(() {
-                                    _isLoading =
-                                        false; // إعادة تعيين حالة التحميل
-                                  });
-                                  return;
-                                }
+                          // تحقق من صحة رمز OTP
+                          if (textEditingController.text.isEmpty || textEditingController.text.length < 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('يرجى إدخال رمز OTP صحيح')),
+                            );
+                            setState(() {
+                              _isLoading = false; // إعادة تعيين حالة التحميل
+                            });
+                            return;
+                          }
 
-                                final phoneNumber =
-                                    '+20${widget.phoneNumber?.substring(1)}';
+                          final phoneNumber = '+966${widget.phoneNumber}';
 
-                                try {
-                                  VerifyOtpResponse response =
-                                      await verifyOtpApi({
-                                    'phoneNumber': phoneNumber,
-                                    'sessionInfo': widget.verificationId!,
-                                    'code': textEditingController.text,
-                                        "user_type": "driver"
-                                      });
+                          try {
+                            VerifyOtpResponse response = await verifyOtpApi({
+                              'phoneNumber': phoneNumber,
+                              'sessionInfo': widget.verificationId!,
+                              'code': textEditingController.text,
+                              'user_type': 'driver',
+                            });
 
-                                  if (response.message == null) {
-                                    // حفظ حالة تسجيل الدخول
-                                    await sharedPref.setBool(
-                                        'isLoggedIn', true);
+                            // التحقق من استجابة "User not found" ضمن رسالة الخطأ
+                            if (response.message != null && response.message!.contains('User not found')) {
+                              // توجيه المستخدم إلى شاشة التسجيل
+                              launchScreen(context, SignUpScreen());
+                            } else if (response.message == null) {
+                              // إذا لم تكن هناك رسالة خطأ، قم بحفظ حالة تسجيل الدخول
+                              await sharedPref.setBool('isLoggedIn', true);
 
-                                    // الحصول على التوكن من SharedPreferences
-                                    String? token = sharedPref.getString(TOKEN);
+                              // الحصول على التوكن من SharedPreferences
+                              String? token = sharedPref.getString(TOKEN);
 
-                                    if (token != null) {
-                                      print('Token: $token');
-                                    } else {
-                                      print(
-                                          'Token not found in SharedPreferences.');
-                                    }
+                              if (token != null) {
+                                print('Token: $token');
+                              } else {
+                                print('Token not found in SharedPreferences.');
+                              }
 
-                                    // التوجيه إلى الشاشة الرئيسية
-                                    launchScreen(context, OtpScreenSucess());
-                                    FocusScope.of(context).unfocus();
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              'فشل التحقق من OTP: ${response.message}')),
-                                    );
-                                  }
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('حدث خطأ: $e')),
-                                  );
-                                } finally {
-                                  setState(() {
-                                    _isLoading = false; // عند انتهاء التحميل
-                                  });
-                                }
-                              },
-                              buttonText: 'الاستمرار', // نص الزر
-                              color: Colors.white,
-                            ),
+                              // التوجيه إلى الشاشة الرئيسية
+                              launchScreen(context, OtpScreenSucess());
+                              FocusScope.of(context).unfocus();
+                            } else {
+                              // إذا كان هناك خطأ آخر غير "User not found"
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('فشل التحقق من OTP: ${response.message}')),
+                              );
+                            }
+                          } catch (e) {
+                            // التعامل مع أي خطأ آخر يحدث أثناء التحقق
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('حدث خطأ: $e')),
+                            );
+                          } finally {
+                            setState(() {
+                              _isLoading = false; // إعادة تعيين حالة التحميل
+                            });
+                          }
 
-                      // Padding(
+
+                        },
+                        buttonText: 'الاستمرار', // نص الزر
+                        color: Colors.white,
+                      )
+
+
+                  // Padding(
                       //     padding: const EdgeInsets.only(top: 40),
                       //     child: ButtonThem.buildButton(
                       //       context,

@@ -10,8 +10,10 @@ import 'package:taxi_driver/Services/AuthService.dart';
 import 'package:taxi_driver/main.dart';
 import 'package:taxi_driver/utils/Extensions/StringExtensions.dart';
 import 'package:taxi_driver/utils/Extensions/context_extensions.dart';
+import '../model/LoginResponse.dart';
 import '../model/ServiceModel.dart';
 import '../network/RestApis.dart';
+import '../otp_firebase_services/firebase_otp.dart';
 import '../utils/Colors.dart';
 import '../utils/Common.dart';
 import '../utils/Constants.dart';
@@ -22,6 +24,8 @@ import 'TermsConditionScreen.dart';
 import 'dart:developer' as dev;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
+import 'otp_screen.dart';
 class SignUpScreen extends StatefulWidget {
   final bool isOtp;
   final bool socialLogin;
@@ -242,9 +246,8 @@ class SignUpScreenState extends State<SignUpScreen> {
           "user_type": "driver",
           "contact_number": widget.socialLogin
               ? '${widget.countryCode}${widget.userName}'
-              : phoneController.text.trim(),
-          'password':
-          widget.socialLogin ? widget.userName : passController.text.trim(),
+              : "+966${phoneController.text.trim()}",
+          'password': widget.socialLogin ? widget.userName : passController.text.trim(),
           "player_id": sharedPref.getString(PLAYER_ID).validate(),
           if (widget.socialLogin) 'login_type': LoginTypeOTP,
           'car_model': carModelController.text.trim(),
@@ -270,44 +273,81 @@ class SignUpScreenState extends State<SignUpScreen> {
 
         try {
           // تنفيذ API التسجيل
-          await signUpApi(req);
+          LoginResponse loginResponse = await signUpApi(req);
 
-          // تنفيذ عملية تسجيل المستخدم
-          await authService.signUpWithEmailPassword(
-            context,
-            mobileNumber: widget.socialLogin
+          // تحقق من نجاح التسجيل
+          if (loginResponse.data != null) {
+            // استخدم بيانات المستخدم هنا
+            int userId = loginResponse.data!.id ?? 0; // استخراج الـ ID
+            String username = loginResponse.data!.username.validate();
+            String email = loginResponse.data!.email.validate();
+            String contactNumber = loginResponse.data!.contactNumber.validate();
+
+            // يمكنك الآن استخدام هذه البيانات كما تريد، سواء للإظهار في واجهة المستخدم أو التخزين
+            print("User ID: $userId");
+            print("Username: $username");
+            print("Email: $email");
+            print("Contact Number: $contactNumber");
+
+            // تنفيذ عملية تسجيل المستخدم
+            await authService.signUpWithEmailPassword(
+              context,
+              mobileNumber: widget.socialLogin
+                  ? '${widget.countryCode}${widget.userName}'
+                  : '$countryCode${phoneController.text.trim()}',
+              email: emailController.text.trim(),
+              fName: firstController.text.trim(),
+              lName: lastNameController.text.trim(),
+              userName: widget.socialLogin
+                  ? widget.userName
+                  : userNameController.text.trim(),
+              password: widget.socialLogin
+                  ? widget.userName
+                  : passController.text.trim(),
+              userType: DRIVER,
+              isOtpLogin: widget.socialLogin,
+            );
+
+            // حفظ رقم الجوال في shared preferences بعد التسجيل الناجح
+            String mobileNumber = widget.socialLogin
                 ? '${widget.countryCode}${widget.userName}'
-                : '$countryCode${phoneController.text.trim()}',
-            email: emailController.text.trim(),
-            fName: firstController.text.trim(),
-            lName: lastNameController.text.trim(),
-            userName: widget.socialLogin
-                ? widget.userName
-                : userNameController.text.trim(),
-            password: widget.socialLogin
-                ? widget.userName
-                : passController.text.trim(),
-            userType: DRIVER,
-            isOtpLogin: widget.socialLogin,
-          );
+                : phoneController.text.trim();
+            await sharedPref.setString(CONTACT_NUMBER, mobileNumber);
 
-          // هنا يمكنك معالجة الاستجابة الناجحة
-          // هنا يتم توجيه المستخدم إلى شاشة الـ Dashboard بعد التسجيل الناجح
-          launchScreen(context, DashboardScreen(),
-              isNewTask: true,
-              pageRouteAnimation: PageRouteAnimation.Slide);
+            // عرض رسالة نجاح مع بيانات المستخدم
+            toast("تم تسجيل سائق بنجاح");
+         //   toast("بيانات المستخدم: ID: $userId، Username: $username، Email: $email، Contact: $contactNumber");
 
+            // إعادة توجيه المستخدم إلى شاشة OTP بعد التسجيل الناجح
+            final PhoneAuthService _phoneAuthService = PhoneAuthService();
+
+            await _phoneAuthService.verifyPhoneNumber(
+              phoneController.text,
+                  (String verificationId, String phoneNumber) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OtpScreen(
+                      verificationId: verificationId,
+                      phoneNumber: phoneNumber,
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            // في حالة عدم وجود بيانات
+            toast("فشل في تسجيل السائق: ${loginResponse.message}");
+          }
         } catch (error) {
-          appStore.setLoading(false);
           print("Error during registration: $error");
-
-
-         }
-
-     }
+          toast("حدث خطأ أثناء التسجيل");
+        } finally {
+          appStore.setLoading(false);
+        }
+      }
     }
   }
-
 
 
 

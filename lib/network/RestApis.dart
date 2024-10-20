@@ -178,7 +178,7 @@ Future<VerifyOtpResponse> verifyOtpApi(Map<String, String> request) async {
   try {
     // تنفيذ الطلب
     Response response = await buildHttpResponse(
-      'verify-otp',
+      'driver-verify',
       request: request,
       method: HttpMethod.POST,
     );
@@ -186,6 +186,8 @@ Future<VerifyOtpResponse> verifyOtpApi(Map<String, String> request) async {
     // التحقق من حالة الاستجابة
     if (response.statusCode >= 200 && response.statusCode <= 206) {
       var json = await handleResponse(response);
+
+
 
       // التحقق من وجود التوكن في الاستجابة
       var token = json['token'];
@@ -220,6 +222,15 @@ Future<VerifyOtpResponse> verifyOtpApi(Map<String, String> request) async {
       }
 
       return VerifyOtpResponse.fromJson(json);
+    } else if (response.statusCode == 404) {
+      // إذا كان الكود 404، إرجاع استجابة تشير إلى أن المستخدم غير موجود
+      // var json = await handleResponse(response);
+      // var error = json['errors'].firstWhere((e) => e['message'] == "User not found", orElse: () => null);
+      // if (error != null) {
+      //   return VerifyOtpResponse(success: false, message: 'User not found');
+      return VerifyOtpResponse(success: false, message: 'User not found');
+
+  //  }
     } else {
       throw 'Request failed with status: ${response.statusCode}';
     }
