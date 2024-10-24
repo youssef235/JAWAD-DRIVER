@@ -115,19 +115,14 @@ Future<LoginResponse> signUpApi(req) async {
   });
 }
 
-Future<LoginResponse> logInApi(Map request,
-    {bool isSocialLogin = false}) async {
-  Response response = await buildHttpResponse(
-      'social-login' ,
-      request: request,
-      method: HttpMethod.POST);
+Future<LoginResponse> logInApi(Map request, {bool isSocialLogin = false}) async {
+  Response response = await buildHttpResponse(isSocialLogin ? 'social-login' : 'login', request: request, method: HttpMethod.POST);
 
   if (!(response.statusCode >= 200 && response.statusCode <= 206)) {
     if (response.body.isJson()) {
       var json = jsonDecode(response.body);
 
-      if (json.containsKey('code') &&
-          json['code'].toString().contains('invalid_username')) {
+      if (json.containsKey('code') && json['code'].toString().contains('invalid_username')) {
         throw 'invalid_username';
       }
     }

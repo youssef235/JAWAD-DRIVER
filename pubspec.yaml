@@ -122,11 +122,9 @@ dev_dependencies:
 dependency_overrides:
   intl: ^0.18.0
   http: ^0.13.5
-  cloud_firestore: ^4.8.1
+  cloud_firestore: ^5.0.0
+  firebase_core: ^2.18.0
   package_info_plus: ^4.1.0
-  web: 0.3.0
-  archive: ^3.5.0
-  win32: ^5.5.4
 
 flutter_icons:
   android: "launcher_icon"

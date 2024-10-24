@@ -225,7 +225,8 @@ class DashboardScreenState extends State<DashboardScreen> {
             setMapPins();
             setState(() {});
             Map req = {
-              "id": riderId,
+              "id": servicesListData!.serviceId.toString(),
+              "is_accept" : "1",
             };
             rideRequestResPond(request: req)
                 .then((value) {})
@@ -1018,8 +1019,8 @@ class DashboardScreenState extends State<DashboardScreen> {
                                                                   context,
                                                                   onAccept:
                                                                       (v) {
-                                                                timerData!
-                                                                    .cancel();
+                                                                // timerData!
+                                                                //     .cancel();
                                                                 FlutterRingtonePlayer()
                                                                     .stop();
                                                                 sharedPref.remove(

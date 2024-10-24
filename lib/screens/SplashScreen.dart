@@ -102,6 +102,7 @@ import '../utils/Common.dart';
 import '../utils/Extensions/StringExtensions.dart';
 import 'DashboardScreen.dart';
 import 'EditProfileScreen.dart';
+import 'SignInScreen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override

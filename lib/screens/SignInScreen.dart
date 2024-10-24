@@ -108,7 +108,7 @@ class SignInScreenState extends State<SignInScreen> {
                   isNewTask: true,
                   pageRouteAnimation: PageRouteAnimation.Slide);
             } else {
-              launchScreen(context, DocumentsScreen(isShow: true),
+              launchScreen(context, DashboardScreen(),
                   isNewTask: true,
                   pageRouteAnimation: PageRouteAnimation.Slide);
             }
@@ -137,7 +137,7 @@ class SignInScreenState extends State<SignInScreen> {
                     isNewTask: true,
                     pageRouteAnimation: PageRouteAnimation.Slide);
               } else {
-                launchScreen(context, DocumentsScreen(isShow: true),
+                launchScreen(context, DashboardScreen(),
                     isNewTask: true,
                     pageRouteAnimation: PageRouteAnimation.Slide);
               }
